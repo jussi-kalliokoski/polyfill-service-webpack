@@ -1,0 +1,27 @@
+{
+  "name": "polyfill-service-webpack",
+  "version": "0.0.0",
+  "author": "Jussi Kalliokoski <jussi.kalliokoski@gmail.com> (http://juss.in)",
+  "license": "ISC",
+  "keywords": [
+    "polyfill.io",
+    "polyfill",
+    "webpack"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jussi-kalliokoski/polyfill-service-webpack.git"
+  },
+  "main": "index.js",
+  "files": [
+    "loader.js",
+    "index.js"
+  ],
+  "scripts": {
+    "test": "true"
+  },
+  "dependencies": {
+    "autopolyfiller": "^1.6.0",
+    "enhanced-resolve": "^0.8.6"
+  }
+}
