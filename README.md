@@ -15,14 +15,14 @@ var PolyfillServicePlugin = require("polyfill-service-webpack");
 var webpackConfig = {
     plugins: [
         new PolyfillServicePlugin({
-            minify: false,
+            minify: true,
             callback: "onPolyfillsLoaded",
             defaultFeatures: {
                 "Object.assing": ["always"],
             },
             flags: [],
-            libVersion: "",
-            unknown: options.unknown || "",
+            libVersion: ">0.0.0",
+            unknown: "polyfill",
         }),
     ],
 };
