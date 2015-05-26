@@ -4,7 +4,7 @@ var callbacks = [];
 var loaded = false;
 var loading = false;
 
-window[$POLYFILL_SERVICE_PLUGIN_CALLBACK_NAME$] = function () {
+window[__POLYFILL_SERVICE_PLUGIN_CALLBACK_NAME__] = function () {
     loaded = true;
     while ( callbacks.length > 0 ) {
         callbacks.shift()();
@@ -19,7 +19,7 @@ function loadPolyfills () {
         script.type = "text/javascript";
         script.charset = "utf-8";
         script.async = true;
-        script.src = $POLYFILL_SERVICE_URL$;
+        script.src = __POLYFILL_SERVICE_URL__;
         head.appendChild(script);
     }
 

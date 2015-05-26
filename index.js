@@ -2,8 +2,20 @@
 
 var ModuleParserHelpers = require("webpack/lib/ModuleParserHelpers");
 var ModuleAliasPlugin = require("enhanced-resolve/lib/ModuleAliasPlugin");
+var NullFactory = require("webpack/lib/NullFactory");
+var ConstDependency = require("webpack/lib/dependencies/ConstDependency");
 var autopolyfiller = require("autopolyfiller");
 var path = require("path");
+
+function jsonDependency (objectFactory) {
+    return function (expr) {
+        var dep = new ConstDependency("(" + JSON.stringify(objectFactory()) + ")", expr.range);
+        dep.loc = expr.loc;
+        this.state.current.addDependency(dep);
+        return true;
+    };
+}
+
 
 function getPolyfillUrl (options, polyfills) {
     var defaultFeatureNames = Object.keys(options.defaultFeatures);
@@ -42,29 +54,47 @@ module.exports = function PolyfillServicePlugin (options) {
     };
 
     return { apply: function (compiler) {
+        var polyfillServiceUrl = "";
+
         compiler.plugin("compilation", function (compilation) {
+            compilation.dependencyFactories.set(ConstDependency, new NullFactory());
+            compilation.dependencyTemplates.set(ConstDependency, new ConstDependency.Template());
+
             var polyfills = options.features;
 
-            if ( !polyfills ) {
-                var polyfiller = autopolyfiller();
-
-                compilation.plugin("succeed-module", function (module) {
-                    polyfiller = polyfiller.add(module._source._value);
-                    polyfills = polyfiller.polyfills;
-                });
-            }
-
-            compilation.plugin("seal", function () {
-                var url = getPolyfillUrl(options, polyfills);
+            compilation.plugin("optimize-tree", function (chunks, modules, callback) {
                 var loader = compilation.modules.filter(function (module) {
                     return module.rawRequest === "__polyfill_service_loader__";
                 })[0];
 
-                loader._source._value = loader._source._value
-                    .replace("$POLYFILL_SERVICE_PLUGIN_CALLBACK_NAME$", JSON.stringify(options.callback))
-                    .replace("$POLYFILL_SERVICE_URL$", JSON.stringify(url));
+                if ( !loader ) {
+                    // `__load_polyfills__()` not called, nothing to do.
+                    return callback();
+                }
+
+                if ( !polyfills ) {
+                    polyfills = modules
+                        .filter(function (module) {
+                            return Boolean(module._source);
+                        })
+                        .reduce(function (polyfiller, module) {
+                            return polyfiller.add(module._source._value);
+                        }, autopolyfiller())
+                        .polyfills;
+                }
+
+                polyfillServiceUrl = getPolyfillUrl(options, polyfills);
+                compilation.rebuildModule(loader, callback);
             });
         });
+
+        compiler.parser.plugin("expression __POLYFILL_SERVICE_PLUGIN_CALLBACK_NAME__", jsonDependency(function () {
+            return options.callback;
+        }));
+
+        compiler.parser.plugin("expression __POLYFILL_SERVICE_URL__", jsonDependency(function () {
+            return polyfillServiceUrl;
+        }));
 
         compiler.parser.plugin("expression __load_polyfills__", function () {
             return ModuleParserHelpers.addParsedVariable(this, "__load_polyfills__", "require(\"__polyfill_service_loader__\")");
