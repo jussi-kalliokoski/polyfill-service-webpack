@@ -18,7 +18,7 @@ var webpackConfig = {
             minify: true,
             callback: "onPolyfillsLoaded",
             defaultFeatures: {
-                "Object.assing": ["always"],
+                "Object.assign": ["always"],
             },
             flags: [],
             libVersion: ">0.0.0",
