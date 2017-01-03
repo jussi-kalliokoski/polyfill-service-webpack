@@ -5,14 +5,15 @@ This is a [webpack](http://webpack.github.io/docs/) plugin that detects required
 ## Installation
 
 ```
-npm install polyfill-service-webpack
+npm install polyfill-service-webpack --save-dev
 ```
 
 and then add the `PolyfillServicePlugin` to the webpack config:
 
 ```javascript
-var PolyfillServicePlugin = require("polyfill-service-webpack");
-var webpackConfig = {
+const PolyfillServicePlugin = require("polyfill-service-webpack");
+
+const webpackConfig = {
     plugins: [
         new PolyfillServicePlugin({
             minify: true,
@@ -32,9 +33,9 @@ After that, you can invoke the special function `__load_polyfills__` from your J
 
 ```javascript
 // request the polyfills
-var polyfillsLoaded = __load_polyfills__();
+const polyfillsLoaded = __load_polyfills__();
 
-polyfillsLoaded(function () {
+polyfillsLoaded(() => {
     // do something when the polyfills have loaded
 });
 ```
